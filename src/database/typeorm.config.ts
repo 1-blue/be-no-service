@@ -11,7 +11,7 @@ export class TypeOrmConfig implements TypeOrmOptionsFactory {
       /** 데이터베이스 종류 */
       type: "postgres",
       /** 사용할 스키마 */
-      schema: "public",
+      schema: this.configService.get("DB_SCHEMA", "development"),
 
       /** 데이터베이스 서버 호스트 */
       host: this.configService.get("DB_HOST", "localhost"),
