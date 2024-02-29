@@ -1,0 +1,359 @@
+import { Test, TestingModule } from "@nestjs/testing";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import testDbConfig from "src/database/test-typeorm.config";
+
+import { UsersController } from "src/v1/users/users.controller";
+import { UsersService } from "src/v1/users/users.service";
+import { User } from "src/v1/users/entities/user.entity";
+import { mockUsers } from "src/v1/users/__mocks__";
+import { UpdateUserDto } from "src/v1/users/dto/update-user.dto";
+
+describe("UsersController", () => {
+  let controller: UsersController;
+  const NON_EXIST_ID = "f3a0b93c-345d-4998-a0e1-7cba262cb453";
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [
+        TypeOrmModule.forRoot(testDbConfig),
+        TypeOrmModule.forFeature([User]),
+      ],
+      controllers: [UsersController],
+      providers: [UsersService],
+    }).compile();
+
+    controller = module.get<UsersController>(UsersController);
+  });
+
+  it("[/api/v1/users] - 컨트롤러 및 서비스가 존재하는지?", () => {
+    expect(controller).toBeDefined();
+  });
+
+  describe("🚀 유저 생성 ( 회원가입 )", () => {
+    const cleanUser = {
+      email: "중복안되는 이메일",
+      password: "패스워드",
+      nickname: "중복안되는 닉네임",
+      phone: "중복안되는 휴대폰 번호",
+    };
+
+    // 생성
+    it.each(
+      mockUsers.map((user) => [
+        user.id,
+        user.email,
+        user.password,
+        user.nickname,
+        user.money,
+        user.phone,
+        user.role,
+      ]),
+    )(
+      "(POST) [/api/v1/users] - 유저가 생성되는지? ( %s )",
+      async (id, email, password, nickname, money, phone, role) => {
+        await controller.create({
+          id,
+          email,
+          password,
+          phone,
+          nickname,
+          money,
+          role,
+        });
+
+        const exUser = await controller.findOne(id);
+
+        expect(exUser).toBeDefined();
+      },
+    );
+    // 생성하려는 유저 이메일 중복 ( 409 )
+    it("(POST) [/api/v1/users] - ( 409 ) 생성하려는 유저의 이메일이 이미 존재하는지?", async () => {
+      try {
+        await controller.create({
+          ...cleanUser,
+          email: mockUsers[0].email,
+        });
+        expect("").toThrow();
+      } catch (error) {
+        expect(error.response.statusCode).toBe(409);
+        expect(error.response.message).toBe("이미 사용중인 이메일입니다.");
+      }
+    });
+    // 생성하려는 유저 닉네임 중복 ( 409 )
+    it("(POST) [/api/v1/users] - ( 409 ) 생성하려는 유저의 닉네임이 이미 존재하는지?", async () => {
+      try {
+        await controller.create({
+          ...cleanUser,
+          nickname: mockUsers[0].nickname,
+        });
+        expect("").toThrow();
+      } catch (error) {
+        expect(error.response.statusCode).toBe(409);
+        expect(error.response.message).toBe("이미 사용중인 닉네임입니다.");
+      }
+    });
+    // 생성하려는 유저 휴대폰 번호 중복 ( 409 )
+    it("(POST) [/api/v1/users] - ( 409 ) 생성하려는 유저의 휴대폰 번호가 이미 존재하는지?", async () => {
+      try {
+        await controller.create({
+          ...cleanUser,
+          phone: mockUsers[0].phone,
+        });
+        expect("").toThrow();
+      } catch (error) {
+        expect(error.response.statusCode).toBe(409);
+        expect(error.response.message).toBe("이미 사용중인 휴대폰 번호입니다.");
+      }
+    });
+  });
+
+  describe("🚀 유저 찾기", () => {
+    // password를 제외한 목데이터들 ( 암호화때문에 비교가 안됨 )
+    const mockUsersWithoutPassword = mockUsers.map((user) => {
+      return { ...user, password: undefined };
+    });
+
+    // 전체 찾기
+    it("(GET) [/api/v1/users] - 유저들이 모두 패칭되는지?", async () => {
+      const exUsers = await controller.findAll();
+
+      exUsers.forEach((exUser) => {
+        delete exUser.createdAt;
+        delete exUser.updatedAt;
+        delete exUser.deletedAt;
+        delete exUser.password;
+      });
+
+      expect(exUsers).toEqual(mockUsersWithoutPassword);
+    });
+
+    // 부분 찾기
+    it.each(mockUsers.map((user) => [user.id]))(
+      "(GET) [/api/v1/users/:userId] - 특정 유저가 패칭되는지? - %s",
+      async (id) => {
+        const exUser = await controller.findOne(id);
+
+        // 시간값 비교에서 제외
+        delete exUser.createdAt;
+        delete exUser.updatedAt;
+        delete exUser.deletedAt;
+
+        expect(exUser).toEqual(
+          mockUsersWithoutPassword.find((user) => user.id === id),
+        );
+      },
+    );
+    // 부분 찾기 실패 ( 404 )
+    it("(GET) [/api/v1/users/:userId] - 찾으려는 유저가 존재하지 않는지?", async () => {
+      try {
+        await controller.findOne(NON_EXIST_ID);
+        expect("").toThrow();
+      } catch (error) {
+        expect(error.response.statusCode).toBe(404);
+        expect(error.response.message).toBe("찾는 유저가 존재하지 않습니다.");
+      }
+    });
+  });
+
+  describe("🚀 유저 수정", () => {
+    const targetUser = mockUsers[0];
+    const toBeModified: UpdateUserDto = {
+      nickname: "유중혁",
+      email: "update@naver.com",
+      money: 100_000,
+      phone: "01012344321",
+      role: "manager",
+    };
+
+    // 수정
+    it(`(PATCH) [/api/v1/users/:userId] - 유저가 수정되는지? - ${mockUsers[0].id}`, async () => {
+      const updatedResult = await controller.update(
+        targetUser.id,
+        toBeModified,
+      );
+      const exUser = await controller.findOne(targetUser.id);
+
+      // 시간값 비교에서 제외
+      delete exUser.createdAt;
+      delete exUser.updatedAt;
+      delete exUser.deletedAt;
+
+      // 비밀번호 비교에서 제외 ( 암호화때문 )
+      delete exUser.password;
+      delete targetUser.password;
+
+      // 하나의 컬럼이 변화되었는지
+      expect(updatedResult.affected).toBe(1);
+      // 변화된 데이터와 수정한 데이터가 일치하는지
+      expect(exUser).toEqual({ ...targetUser, ...toBeModified });
+    });
+    // 수정 실패 ( 404 )
+    it("(PATCH) [/api/v1/users/:userId] - 수정하려는 유저가 존재하지 않는지?", async () => {
+      try {
+        await controller.update(NON_EXIST_ID, {});
+        expect("").toThrow();
+      } catch (error) {
+        expect(error.response.statusCode).toBe(404);
+        expect(error.response.message).toBe("찾는 유저가 존재하지 않습니다.");
+      }
+    });
+    // 수정하려는 유저 이메일 중복 ( 409 )
+    it("(PATCH) [/api/v1/users/:userId] - 수정하려는 유저의 이메일이 이미 존재하는지?", async () => {
+      try {
+        await controller.findOne(targetUser.id);
+        await controller.update(targetUser.id, { email: toBeModified.email });
+
+        expect("").toThrow();
+      } catch (error) {
+        expect(error.response.statusCode).toBe(409);
+        expect(error.response.message).toBe("이미 사용중인 이메일입니다.");
+      }
+    });
+    // 수정하려는 유저 닉네임 중복 ( 409 )
+    it("(PATCH) [/api/v1/users/:userId] - 수정하려는 유저의 닉네임이 이미 존재하는지?", async () => {
+      try {
+        await controller.findOne(targetUser.id);
+        await controller.update(targetUser.id, {
+          nickname: toBeModified.nickname,
+        });
+
+        expect("").toThrow();
+      } catch (error) {
+        expect(error.response.statusCode).toBe(409);
+        expect(error.response.message).toBe("이미 사용중인 닉네임입니다.");
+      }
+    });
+    // 수정하려는 유저 이메일 중복 ( 409 )
+    it("(PATCH) [/api/v1/users/:userId] - 수정하려는 유저의 이메일이 이미 존재하는지?", async () => {
+      try {
+        await controller.findOne(targetUser.id);
+        await controller.update(targetUser.id, { email: toBeModified.email });
+
+        expect("").toThrow();
+      } catch (error) {
+        expect(error.response.statusCode).toBe(409);
+        expect(error.response.message).toBe("이미 사용중인 이메일입니다.");
+      }
+    });
+  });
+
+  describe("🚀 유저 유효성 검사 ", () => {
+    const targetUser = mockUsers[1];
+
+    describe("🚀 이메일 중복 검사", () => {
+      // 존재하지 않는 이메일 중복 검사
+      it("(POST) [/api/v1/users/check/email] - 존재하지 않는 이메일 중복 검사", async () => {
+        // 에러 안나면 검사 통과
+        await controller.hasDuplicateEmail({ email: "이메일@naver.com" });
+        expect("").toBe("");
+      });
+      // 존재하는 이메일 중복 검사 ( 409 )
+      it("(POST) [/api/v1/users/check/email] - 존재하는 이메일 중복 검사", async () => {
+        try {
+          await controller.hasDuplicateEmail({ email: targetUser.email });
+          expect("").toThrow();
+        } catch (error) {
+          expect(error.response.statusCode).toBe(409);
+          expect(error.response.message).toBe("이미 사용중인 이메일입니다.");
+        }
+      });
+    });
+
+    describe("🚀 닉네임 중복 검사", () => {
+      // 존재하지 않는 닉네임 중복 검사
+      it("(POST) [/api/v1/users/check/nickname] - 존재하지 않는 닉네임 중복 검사", async () => {
+        // 에러 안나면 검사 통과
+        await controller.hasDuplicateNickname({ nickname: "닉네임" });
+        expect("").toBe("");
+      });
+      // 존재하는 닉네임 중복 검사 ( 409 )
+      it("(POST) [/api/v1/users/check/nickname] - 존재하는 닉네임 중복 검사", async () => {
+        try {
+          await controller.hasDuplicateNickname({
+            nickname: targetUser.nickname,
+          });
+          expect("").toThrow();
+        } catch (error) {
+          expect(error.response.statusCode).toBe(409);
+          expect(error.response.message).toBe("이미 사용중인 닉네임입니다.");
+        }
+      });
+    });
+
+    describe("🚀 휴대폰 번호 중복 검사", () => {
+      // 존재하지 않는 휴대폰 번호 중복 검사
+      it("(POST) [/api/v1/users/check/phone] - 존재하지 않는 휴대폰 번호 중복 검사", async () => {
+        // 에러 안나면 검사 통과
+        await controller.hasDuplicatePhone({ phone: "0109999999" });
+        expect("").toBe("");
+      });
+      // 존재하는 휴대폰 번호 중복 검사 ( 409 )
+      it("(POST) [/api/v1/users/check/phone] - 존재하는 휴대폰 번호 중복 검사", async () => {
+        try {
+          await controller.hasDuplicatePhone({ phone: targetUser.phone });
+          expect("").toThrow();
+        } catch (error) {
+          expect(error.response.statusCode).toBe(409);
+          expect(error.response.message).toBe(
+            "이미 사용중인 휴대폰 번호입니다.",
+          );
+        }
+      });
+    });
+
+    describe("🚀 이메일 & 비밀번호 일치 유저 검사", () => {
+      it("(POST) [/api/v1/users/validate] - 이메일과 비밀번호가 불일치하는 경우", async () => {
+        try {
+          await controller.validate({
+            email: "이메일@naver.com",
+            password: "이메일",
+          });
+          expect("").toThrow();
+        } catch (error) {
+          expect(error.response.statusCode).toBe(401);
+          expect(error.response.message).toBe(
+            "이메일 혹은 비밀번호가 유효하지 않습니다.",
+          );
+        }
+      });
+      it("(POST) [/api/v1/users/validate] - 이메일과 비밀번호가 일치하는 경우", async () => {
+        const exUser = await controller.validate({
+          email: targetUser.email,
+          password: targetUser.password,
+        });
+
+        delete exUser.createdAt;
+        delete exUser.updatedAt;
+        delete exUser.deletedAt;
+
+        delete targetUser.password;
+        delete exUser.password;
+
+        expect(targetUser).toEqual(exUser);
+      });
+    });
+  });
+
+  describe("🚀 유저 삭제 ( 회원탈퇴 )", () => {
+    // 삭제
+    it.each(mockUsers.map((cat) => [cat.id]))(
+      "(DELETE) [/api/v1/users/:userId] - 유저 삭제 테스트 - %s",
+      async (id) => {
+        const { affected } = await controller.delete(id);
+
+        // 하나의 컬럼이 변화되었으며
+        expect(affected).toEqual(1);
+      },
+    );
+    // 삭제 실패 ( 404 )
+    it("(DELETE) [/api/v1/users/:userId] - 삭제하려는 유저가 존재하지 않는지?", async () => {
+      try {
+        await controller.delete(NON_EXIST_ID);
+        expect("").toThrow();
+      } catch (error) {
+        expect(error.response.statusCode).toBe(404);
+        expect(error.response.message).toBe("찾는 유저가 존재하지 않습니다.");
+      }
+    });
+  });
+});

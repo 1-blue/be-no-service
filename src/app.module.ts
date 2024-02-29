@@ -6,6 +6,7 @@ import { ConfigModule } from "@nestjs/config";
 import { TypeOrmConfig } from "src/database/typeorm.config";
 
 import { CatsModule } from "src/v1/cats/cats.module";
+import { UsersModule } from "src/v1/users/users.module";
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { CatsModule } from "src/v1/cats/cats.module";
       },
     }),
     CatsModule,
+    UsersModule,
   ],
   controllers: [],
   providers: [],
