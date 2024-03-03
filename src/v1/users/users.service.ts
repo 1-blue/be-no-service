@@ -23,6 +23,9 @@ const userSelect: FindOptionsSelect<User> = {
   phone: true,
   money: true,
   role: true,
+  provider: true,
+  providerId: true,
+  image: true,
 };
 
 @Injectable()
@@ -126,6 +129,17 @@ export class UsersService {
         "이메일 혹은 비밀번호가 유효하지 않습니다.",
       );
     }
+
+    return exUser;
+  }
+
+  /** TODO: 테스트 코드 */
+  /** OAuth 로그인된 기록 기반으로 유저 정보 찾기 */
+  async findOneByProviderId(providerId: string) {
+    const exUser = await this.usersRepository.findOne({
+      where: { providerId },
+      select: userSelect,
+    });
 
     return exUser;
   }

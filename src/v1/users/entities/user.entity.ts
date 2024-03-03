@@ -11,6 +11,13 @@ import { CommonEntity } from "src/common/entity";
 export type UserRole = "admin" | "manager" | "user" | "guest";
 const role: UserRole[] = ["admin", "manager", "user", "guest"];
 
+/**
+ * + `kakao`: 카카오 로그인인 경우
+ * + `google`: 구글 로그인인 경우
+ */
+export type UserProvider = "kakao" | "google";
+const provider: UserProvider[] = ["kakao", "google"];
+
 @Entity()
 export class User extends CommonEntity {
   @Column("varchar", { comment: "이메일", unique: true })
@@ -35,4 +42,24 @@ export class User extends CommonEntity {
     default: "guest",
   })
   role?: UserRole;
+
+  @Column("enum", {
+    enum: provider,
+    enumName: "provider",
+    comment: "OAuth 로그인인 경우 제공자",
+    nullable: true,
+  })
+  provider?: UserProvider;
+
+  @Column("varchar", {
+    comment: "OAuth 로그인인 경우 제공자 식별값",
+    nullable: true,
+  })
+  providerId?: string;
+
+  @Column("varchar", {
+    comment: "유저의 이미지",
+    default: "TODO: 기본 이미지 경로 정해서 입력하기",
+  })
+  image?: string;
 }

@@ -1,7 +1,7 @@
 import { Optional } from "@nestjs/common";
 import { IsNotEmpty } from "class-validator";
 
-import { UserRole } from "src/v1/users/entities/user.entity";
+import { UserProvider, UserRole } from "src/v1/users/entities/user.entity";
 
 export class CreateUserDto {
   @Optional()
@@ -24,4 +24,13 @@ export class CreateUserDto {
 
   @Optional()
   role?: UserRole;
+
+  @Optional()
+  provider?: UserProvider;
+
+  @Optional()
+  providerId?: string;
+
+  @Optional()
+  image?: string;
 }

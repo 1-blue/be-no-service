@@ -1,4 +1,5 @@
 import { NestFactory } from "@nestjs/core";
+import * as cookieParser from "cookie-parser";
 import * as session from "express-session";
 import * as passport from "passport";
 
@@ -14,6 +15,10 @@ const bootstrap = async () => {
       origin: [process.env.CLIENT_URL],
     });
 
+    // cookie
+    app.use(cookieParser());
+
+    // session ( passport )
     app.use(
       session({
         resave: false,
