@@ -12,11 +12,12 @@ export type UserRole = "admin" | "manager" | "user" | "guest";
 const role: UserRole[] = ["admin", "manager", "user", "guest"];
 
 /**
+ * + `local`: 일반 로그인인 경우 ( 이메일 + 비밀번호 )
  * + `kakao`: 카카오 로그인인 경우
  * + `google`: 구글 로그인인 경우
  */
-export type UserProvider = "kakao" | "google";
-const provider: UserProvider[] = ["kakao", "google"];
+export type UserProvider = "local" | "kakao" | "google";
+const provider: UserProvider[] = ["local", "kakao", "google"];
 
 @Entity()
 export class User extends CommonEntity {
@@ -47,7 +48,7 @@ export class User extends CommonEntity {
     enum: provider,
     enumName: "provider",
     comment: "OAuth 로그인인 경우 제공자",
-    nullable: true,
+    default: "local",
   })
   provider?: UserProvider;
 

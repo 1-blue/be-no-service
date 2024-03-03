@@ -14,6 +14,7 @@ import { IsLoggedIn, IsLoggedOut } from "src/guards";
 import { AuthService } from "src/v1/auth/auth.service";
 import { LocalAuthGuard } from "src/v1/auth/local/local.guard";
 import { KakaoAuthGuard } from "src/v1/auth/kakao/kakao.guard";
+import { GoogleAuthGuard } from "src/v1/auth/google/google.guard";
 
 @Controller("api/v1/auth")
 export class AuthController {
@@ -52,6 +53,27 @@ export class AuthController {
   }
 
   // ==================== google login ====================
+  @UseGuards(IsLoggedOut)
+  @UseGuards(GoogleAuthGuard)
+  @Get("login/google")
+  async oauthGoogle() {
+    // `GoogleAuthGuard` 에서 로직을 처리하고 응답값을 `login/google/redirect`로 보냄
+  }
+
+  @UseGuards(GoogleAuthGuard)
+  @Get("login/google/redirect")
+  async oauthGoogleRedirect(
+    @Req() req: RequestWithOAuthUser,
+    @Res() res: Response,
+  ) {
+    await this.authService.validateOAuth(req.user);
+
+    // 구글에서 제공해준 토큰들 ( 로그아웃 시 사용 )
+    res.cookie("accessToken", req.user.accessToken);
+    res.cookie("refreshToken", req.user.refreshToken);
+
+    return res.redirect(process.env.CLIENT_URL + "/oauth/redirect");
+  }
 
   @UseGuards(IsLoggedIn)
   @Post("logout")

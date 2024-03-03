@@ -26,7 +26,7 @@ export class AuthService {
         // 로그인 시 닉네임 제공에 허용했다면, 닉네임 기반으로 이름 생성 ( 아니라면 provider 기준으로 이름 생성 )
         nickname:
           (oauthUser.nickname ? oauthUser.nickname : oauthUser.provider) +
-          +"_" +
+          "_" +
           Date.now(),
         password: process.env.OAUTH_PASSWORD,
         provider: oauthUser.provider,

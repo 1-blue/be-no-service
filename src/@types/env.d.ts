@@ -35,5 +35,12 @@ declare namespace NodeJS {
     readonly KAKAO_CLIENT_SECRET: string;
     /** 카카오 ( 검증 완료 시 응답할 URL ) */
     readonly KAKAO_CLIENT_CALLBACK_URL: string;
+
+    /** 구글 ( `Client Id` ) */
+    readonly GOOGLE_CLIENT_ID: string;
+    /** 구글 ( `Client Secret Password` ) */
+    readonly GOOGLE_CLIENT_SECRET: string;
+    /** 구글 ( 검증 완료 시 응답할 URL ) */
+    readonly GOOGLE_CLIENT_CALLBACK_URL: string;
   }
 }
