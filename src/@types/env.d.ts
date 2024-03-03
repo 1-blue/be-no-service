@@ -19,5 +19,11 @@ declare namespace NodeJS {
     readonly DB_DATABASE: string;
     /** `DB` 명령어 로깅 여부 */
     readonly DB_LOGGING: string;
+
+    /** 쿠키 암호화에 사용할 값 */
+    readonly COOKIE_SECRET: string;
+
+    /** 클라이언트 경로 */
+    readonly CLIENT_URL: string;
   }
 }

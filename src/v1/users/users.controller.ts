@@ -6,15 +6,22 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from "@nestjs/common";
 
 import { UsersService } from "src/v1/users/users.service";
 import type { CreateUserDto } from "src/v1/users/dto/create-user.dto";
 import type { UpdateUserDto } from "src/v1/users/dto/update-user.dto";
+import type { RequestWithUser } from "src/types";
 
 @Controller("api/v1/users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Get("me")
+  findMe(@Req() req: RequestWithUser) {
+    return req.user;
+  }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
