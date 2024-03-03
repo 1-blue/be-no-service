@@ -10,6 +10,7 @@ import {
 import { Request, Response } from "express";
 
 import { RequestWithOAuthUser } from "src/types";
+import { IsLoggedIn, IsLoggedOut } from "src/guards";
 import { AuthService } from "src/v1/auth/auth.service";
 import { LocalAuthGuard } from "src/v1/auth/local/local.guard";
 import { KakaoAuthGuard } from "src/v1/auth/kakao/kakao.guard";
@@ -19,6 +20,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   // ==================== local login ====================
+  @UseGuards(IsLoggedOut)
   @UseGuards(LocalAuthGuard)
   @Post("login")
   @HttpCode(200)
@@ -27,6 +29,7 @@ export class AuthController {
   }
 
   // ==================== kakao login ====================
+  @UseGuards(IsLoggedOut)
   @UseGuards(KakaoAuthGuard)
   @Get("login/kakao")
   async oauthKakao() {
@@ -50,6 +53,7 @@ export class AuthController {
 
   // ==================== google login ====================
 
+  @UseGuards(IsLoggedIn)
   @Post("logout")
   @HttpCode(200)
   logout(@Req() req: Request, @Res() res: Response): void {
