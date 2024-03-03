@@ -100,10 +100,12 @@ export class AuthController {
     }
 
     return req.logout({ keepSessionInfo: false }, () => {
-      // TODO: 세션 쿠키 지우기
       res.clearCookie("connect.sid");
       res.clearCookie("accessToken");
       res.clearCookie("refreshToken");
+      req.session.destroy((error) => {
+        console.error("[Error] req.session.destroy() >> ", error);
+      });
 
       res.send();
     });
