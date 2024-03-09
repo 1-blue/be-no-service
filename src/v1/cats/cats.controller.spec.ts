@@ -1,25 +1,18 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { TypeOrmModule } from "@nestjs/typeorm";
 
-import testDbConfig from "src/database/test-typeorm.config";
-
+import { PrismaService } from "src/v0/prisma/prisma.service";
 import { CatsController } from "src/v1/cats/cats.controller";
 import { CatsService } from "src/v1/cats/cats.service";
-import { Cat } from "src/v1/cats/entities/cat.entity";
 import { mockCats } from "src/v1/cats/__mocks__";
 
 describe("🚀 [/api/v1/cats] - CatsController", () => {
+  const NOT_EXIEST_ID = "000000000-0000-0000-0000-000000000000";
   let controller: CatsController;
-  const notFoundCatId = "f3a0b93c-345d-4998-a0e1-7cba262cb453";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        TypeOrmModule.forRoot(testDbConfig),
-        TypeOrmModule.forFeature([Cat]),
-      ],
       controllers: [CatsController],
-      providers: [CatsService],
+      providers: [CatsService, PrismaService],
     }).compile();
 
     controller = module.get<CatsController>(CatsController);
@@ -61,11 +54,14 @@ describe("🚀 [/api/v1/cats] - CatsController", () => {
   describe("🚀 고양이 찾기", () => {
     // 전체 찾기
     it("(GET) [/api/v1/cats] - 고양이들이 모두 패칭되는지?", async () => {
-      const exCats = await controller.findAll({
-        select: { id: true, name: true, age: true, gender: true },
-      });
+      const exCats = await controller.findAll();
 
-      expect(exCats).toEqual(mockCats);
+      exCats.forEach((exCat, index) => {
+        expect(exCat.id).toEqual(mockCats[index].id);
+        expect(exCat.name).toEqual(mockCats[index].name);
+        expect(exCat.age).toEqual(mockCats[index].age);
+        expect(exCat.gender).toEqual(mockCats[index].gender);
+      });
     });
 
     // 부분 찾기
@@ -73,19 +69,18 @@ describe("🚀 [/api/v1/cats] - CatsController", () => {
       "(GET) [/api/v1/cats/:catId] - 특정 고양이가 패칭되는지? - %s",
       async (id) => {
         const exCat = await controller.findOne(id);
+        const mockCat = mockCats.find((mockCat) => mockCat.id === id);
 
-        // 시간값 비교에서 제외
-        delete exCat.createdAt;
-        delete exCat.updatedAt;
-        delete exCat.deletedAt;
-
-        expect(exCat).toEqual(mockCats.find((mockCat) => mockCat.id === id));
+        expect(exCat.id).toEqual(mockCat.id);
+        expect(exCat.name).toEqual(mockCat.name);
+        expect(exCat.age).toEqual(mockCat.age);
+        expect(exCat.gender).toEqual(mockCat.gender);
       },
     );
     // 부분 찾기 실패 ( 404 )
     it("(GET) [/api/v1/cats/:catId] - 찾으려는 고양이가 존재하지 않는지?", async () => {
       try {
-        await controller.findOne(notFoundCatId);
+        await controller.findOne(NOT_EXIEST_ID);
         expect("").toThrow();
       } catch (error) {
         expect(error.response.statusCode).toBe(404);
@@ -95,28 +90,23 @@ describe("🚀 [/api/v1/cats] - CatsController", () => {
   });
 
   describe("🚀 고양이 수정", () => {
-    const targetCat = mockCats[0];
-    const toBeModified = { name: "김독자", age: 28, gender: true };
+    const mockCat = mockCats[0];
+    const toBeModified = { name: "유중혁", age: 28, gender: true };
 
     // 수정
     it(`(PATCH) [/api/v1/cats/:catId] - 고양이가 수정되는지? - ${mockCats[0].id}`, async () => {
-      const updatedResult = await controller.update(targetCat.id, toBeModified);
-      const exCat = await controller.findOne(targetCat.id);
+      const updatedCat = await controller.update(mockCat.id, toBeModified);
+      const exCat = await controller.findOne(mockCat.id);
 
-      // 시간값 비교에서 제외
-      delete exCat.createdAt;
-      delete exCat.updatedAt;
-      delete exCat.deletedAt;
-
-      // 하나의 컬럼이 변화되었는지
-      expect(updatedResult.affected).toBe(1);
-      // 변화된 데이터와 수정한 데이터가 일치하는지
-      expect(exCat).toEqual({ ...targetCat, ...toBeModified });
+      expect(exCat.id).toEqual(updatedCat.id);
+      expect(exCat.name).toEqual(updatedCat.name);
+      expect(exCat.age).toEqual(updatedCat.age);
+      expect(exCat.gender).toEqual(updatedCat.gender);
     });
     // 수정 실패 ( 404 )
     it("(PATCH) [/api/v1/cats/:catId] - 수정하려는 고양이가 존재하지 않는지?", async () => {
       try {
-        await controller.update(notFoundCatId, {});
+        await controller.update(NOT_EXIEST_ID, {});
         expect("").toThrow();
       } catch (error) {
         expect(error.response.statusCode).toBe(404);
@@ -126,8 +116,8 @@ describe("🚀 [/api/v1/cats] - CatsController", () => {
     // 수정하려는 고양이 이름 중복 ( 409 )
     it("(PATCH) [/api/v1/cats/:catId] - 수정하려는 고양이의 이름이 이미 존재하는지?", async () => {
       try {
-        await controller.findOne(targetCat.id);
-        await controller.update(targetCat.id, toBeModified);
+        await controller.findOne(mockCat.id);
+        await controller.update(mockCat.id, toBeModified);
 
         expect("").toThrow();
       } catch (error) {
@@ -142,16 +132,15 @@ describe("🚀 [/api/v1/cats] - CatsController", () => {
     it.each(mockCats.map((cat) => [cat.id]))(
       "(DELETE) [/api/v1/cats/:catId] - 고양이 제거 테스트 - %s",
       async (id) => {
-        const { affected } = await controller.delete(id);
+        const deletedCat = await controller.delete(id);
 
-        // 하나의 컬럼이 변화되었으며
-        expect(affected).toEqual(1);
+        expect(id).toEqual(deletedCat.id);
       },
     );
     // 삭제 실패 ( 404 )
     it("(DELETE) [/api/v1/cats/:catId] - 삭제하려는 고양이가 존재하지 않는지?", async () => {
       try {
-        await controller.delete(notFoundCatId);
+        await controller.delete(NOT_EXIEST_ID);
         expect("").toThrow();
       } catch (error) {
         expect(error.response.statusCode).toBe(404);

@@ -18,7 +18,7 @@ describe("🚀 AppController (e2e)", () => {
     await app.init();
   });
 
-  // 고양이 테스트
+  // FIXME: (수정하기 prisma) 고양이 테스트
   describe("🚀 CatController CRUD", () => {
     // 생성
     it.each(mockCats.map((cat) => [cat.id, cat.name, cat.age, cat.gender]))(

@@ -8,12 +8,10 @@ import {
   Delete,
   HttpCode,
 } from "@nestjs/common";
-import { FindManyOptions } from "typeorm";
 
 import { CatsService } from "src/v1/cats/cats.service";
 import { CreateCatDto } from "src/v1/cats/dto/create-cat.dto";
 import { UpdateCatDto } from "src/v1/cats/dto/update-cat.dto";
-import { Cat } from "src/v1/cats/entities/cat.entity";
 
 @Controller("api/v1/cats")
 export class CatsController {
@@ -26,8 +24,8 @@ export class CatsController {
   }
 
   @Get()
-  findAll(options?: FindManyOptions<Cat>) {
-    return this.catsService.findAll(options);
+  findAll() {
+    return this.catsService.findAll();
   }
 
   @Get(":id")
