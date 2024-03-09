@@ -5,6 +5,8 @@ declare namespace NodeJS {
     /** 실행 포트 */
     readonly PORT: string;
 
+    /** 데이터베이스 URL `postgresql://유저명:비밀번호@호스트:포트/데이터베이스명?schema=스키마명` */
+    readonly DATABASE_URL: `postgresql://${string}`;
     /** `DB` 스키마 */
     readonly DB_SCHEMA: "public" | "development" | "test";
     /** `DB` 호스트 */

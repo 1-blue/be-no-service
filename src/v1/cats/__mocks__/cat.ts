@@ -1,21 +1,37 @@
 import { v4 } from "uuid";
-
-import type { NonFunctionProperties } from "src/types";
-
-import { Cat } from "src/v1/cats/entities/cat.entity";
+import { Cat } from "@prisma/client";
 
 /** 고양이들 목데이터 */
-export const mockCats: NonFunctionProperties<Cat>[] = [
+export const mockCats: Pick<
+  Cat,
+  "id" | "name" | "age" | "gender" | "imageId"
+>[] = [
   {
     id: v4(),
-    name: "가가",
-    age: 1,
-    gender: false,
+    name: "김독자",
+    age: 28,
+    gender: true,
+    imageId: "11111111-1111-1111-1111-111111111111",
   },
   {
     id: v4(),
-    name: "나나",
-    age: 2,
+    name: "유상아",
+    age: 27,
+    gender: false,
+    imageId: "11111111-1111-1111-1111-111111111111",
+  },
+  {
+    id: v4(),
+    name: "이길영",
+    age: 11,
     gender: true,
+    imageId: "11111111-1111-1111-1111-111111111111",
+  },
+  {
+    id: v4(),
+    name: "한수영",
+    age: 26,
+    gender: false,
+    imageId: "11111111-1111-1111-1111-111111111111",
   },
 ];

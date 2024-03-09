@@ -1,16 +1,30 @@
-import { Optional } from "@nestjs/common";
-import { IsNotEmpty } from "class-validator";
+import {
+  IsOptional,
+  IsNotEmpty,
+  IsUUID,
+  IsString,
+  IsNumber,
+  IsBoolean,
+} from "class-validator";
 
 export class CreateCatDto {
-  @Optional()
+  @IsOptional()
+  @IsUUID()
   id?: string;
 
   @IsNotEmpty()
+  @IsString()
   name: string;
 
   @IsNotEmpty()
+  @IsNumber()
   age: number;
 
-  @Optional()
+  @IsOptional()
+  @IsBoolean()
   gender?: boolean;
+
+  @IsOptional()
+  @IsUUID()
+  imageId?: string;
 }
