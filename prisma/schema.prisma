@@ -55,7 +55,7 @@ model Image {
   deletedAt DateTime?
 
   /// 이미지 URL
-  url    String
+  url    String      @unique
   /// 이미지 원본 파일명
   name   String
   /// 이미지 상태
@@ -101,13 +101,13 @@ model User {
   deletedAt DateTime?
 
   /// 유저 이메일
-  email      String
+  email      String       @unique
   /// 유저 비밀번호
   password   String
   /// 유저 닉네임
-  nickname   String
+  nickname   String       @unique
   /// 유저 휴대폰 번호
-  phone      String?
+  phone      String?      @unique
   /// 유저 보유 금액
   money      Int
   /// 유저 역할
@@ -115,10 +115,10 @@ model User {
   /// 유저 로그인 방식
   provider   UserProvider
   /// 유저 로그인 방식 식별자 ( `OAuth`인 경우 제공받는값 )
-  providerId String?
+  providerId String?      @unique
 
   /// [1:N] 유저의 이미지
-  image   Image  @relation(fields: [imageId], references: [id])
+  image   Image?  @relation(fields: [imageId], references: [id])
   /// [1:N] 이미지 식별자
-  imageId String
+  imageId String?
 }
