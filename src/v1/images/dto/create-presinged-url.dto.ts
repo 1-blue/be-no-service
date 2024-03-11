@@ -14,5 +14,5 @@ export class CreatePresignedURLDto {
   @IsOptional()
   @IsEnum(IMAGE_STATUSES, { message: "유효하지 않은 이미지 상태입니다." })
   @Transform(({ value }) => value.toLowerCase())
-  status?: Lowercase<ImageStatus>;
+  status?: Lowercase<ImageStatus> = "temp";
 }

@@ -75,7 +75,7 @@ export class ImagesService {
    *
    * @example
    * move({
-   *   id: "999999999-9999-9999-9999-999999999999",
+   *   id: "99999999-9999-9999-9999-999999999999",
    *   beforeStatus: "temp",
    *   afterStatus: "use"
    * });
@@ -131,7 +131,7 @@ export class ImagesService {
    *
    * @example
    * delete({
-   *   id: "999999999-9999-9999-9999-999999999999",
+   *   id: "99999999-9999-9999-9999-999999999999",
    *   beforeStatus: "use",
    * });
    **/
