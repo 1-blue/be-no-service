@@ -10,7 +10,7 @@ import {
 
 import { ImagesService } from "src/v1/images/images.service";
 import { CreateImageDto } from "src/v1/images/dto/create-image.dto";
-import { FindOneImageDto } from "src/v1/images/dto/find-one-image.dto";
+import { FindByIdDto } from "src/dto/find-by-id.dto";
 import { MoveImageDto } from "src/v1/images/dto/move-image.dto";
 import { DeleteImageDto } from "src/v1/images/dto/delete-image.dto";
 import { CreatePresignedURLDto } from "src/v1/images/dto/create-presinged-url.dto";
@@ -25,18 +25,21 @@ export class ImagesController {
   }
 
   @Get(":id")
-  findOne(@Param() findOneImageDto: FindOneImageDto) {
-    return this.imagesService.findOne(findOneImageDto);
+  findOne(@Param() fineByIdDto: FindByIdDto) {
+    return this.imagesService.findOne(fineByIdDto);
   }
 
-  @Patch()
-  move(@Body() moveDto: MoveImageDto) {
-    return this.imagesService.move(moveDto);
+  @Patch(":id")
+  move(@Param() findByIdDto: FindByIdDto, @Body() moveDto: MoveImageDto) {
+    return this.imagesService.move(findByIdDto, moveDto);
   }
 
-  @Delete()
-  delete(@Body() deleteS3Dto: DeleteImageDto) {
-    return this.imagesService.delete(deleteS3Dto);
+  @Delete(":id")
+  delete(
+    @Param() findByIdDto: FindByIdDto,
+    @Body() deleteS3Dto: DeleteImageDto,
+  ) {
+    return this.imagesService.delete(findByIdDto, deleteS3Dto);
   }
 
   @Post("/presigned-url")

@@ -5,7 +5,7 @@ import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 
 import { PrismaService } from "src/v0/prisma/prisma.service";
 import { CreateImageDto } from "src/v1/images/dto/create-image.dto";
-import { FindOneImageDto } from "src/v1/images/dto/find-one-image.dto";
+import { FindByIdDto } from "src/dto/find-by-id.dto";
 import { MoveImageDto } from "src/v1/images/dto/move-image.dto";
 import { DeleteImageDto } from "src/v1/images/dto/delete-image.dto";
 import { CreatePresignedURLDto } from "src/v1/images/dto/create-presinged-url.dto";
@@ -45,7 +45,7 @@ export class ImagesService {
     });
   }
 
-  async findOne({ id }: FindOneImageDto) {
+  async findOne({ id }: FindByIdDto) {
     /** DB에 저장된 이미지인지 확인 */
     const exImageToDB = await this.prismaService.image.findUnique({
       where: { id },
@@ -80,7 +80,7 @@ export class ImagesService {
    *   afterStatus: "use"
    * });
    **/
-  async move({ id, beforeStatus, afterStatus }: MoveImageDto) {
+  async move({ id }: FindByIdDto, { beforeStatus, afterStatus }: MoveImageDto) {
     const exImage = await this.findOne({ id });
 
     // 1. https://no-service.s3.ap-northeast-2.amazonaws.com/images/development/temp/avatar_1709961663461.jpg
@@ -135,7 +135,7 @@ export class ImagesService {
    *   beforeStatus: "use",
    * });
    **/
-  async delete({ id, beforeStatus }: DeleteImageDto) {
+  async delete({ id }: FindByIdDto, { beforeStatus }: DeleteImageDto) {
     const exImage = await this.findOne({ id });
 
     // 1. https://no-service.s3.ap-northeast-2.amazonaws.com/images/development/temp/avatar_1709961663461.jpg

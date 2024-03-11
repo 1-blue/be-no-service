@@ -73,11 +73,10 @@ describe("ImagesController", () => {
   describe("🚀 이미지 이동", () => {
     // 이동
     it("(PATCH) [/api/v1/images] - 이미지가 이동되는지?", async () => {
-      const movedImage = await controller.move({
-        id: mockImage.id,
-        beforeStatus: "temp",
-        afterStatus: "use",
-      });
+      const movedImage = await controller.move(
+        { id: mockImage.id },
+        { beforeStatus: "temp", afterStatus: "use" },
+      );
 
       delete movedImage.createdAt;
       delete movedImage.updatedAt;
@@ -90,10 +89,10 @@ describe("ImagesController", () => {
   describe("🚀 이미지 삭제", () => {
     // 삭제
     it("(DELETE) [/api/v1/images] - 이미지가 삭제되는지?", async () => {
-      const deletedImage = await controller.delete({
-        id: mockImage.id,
-        beforeStatus: "use",
-      });
+      const deletedImage = await controller.delete(
+        { id: mockImage.id },
+        { beforeStatus: "use" },
+      );
 
       delete deletedImage.createdAt;
       delete deletedImage.updatedAt;
@@ -106,11 +105,10 @@ describe("ImagesController", () => {
   describe("🚀 테스트 초기화", () => {
     // 이동
     it("(PATCH) [/api/v1/images] - 다음 테스트를 위한 이미지 원상복구 ( S3 )", async () => {
-      const deletedImage = await controller.move({
-        id: mockImage.id,
-        beforeStatus: "deleted",
-        afterStatus: "temp",
-      });
+      const deletedImage = await controller.move(
+        { id: mockImage.id },
+        { beforeStatus: "deleted", afterStatus: "temp" },
+      );
 
       delete deletedImage.createdAt;
       delete deletedImage.updatedAt;

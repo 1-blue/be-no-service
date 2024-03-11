@@ -34,7 +34,7 @@ describe("🚀 [/api/v1/cats] - CatsController", () => {
           gender,
         });
 
-        const exCat = await controller.findOne(id);
+        const exCat = await controller.findOne({ id });
 
         expect(createdCat).toEqual(exCat);
       },
@@ -68,7 +68,7 @@ describe("🚀 [/api/v1/cats] - CatsController", () => {
     it.each(mockCats.map((cat) => [cat.id]))(
       "(GET) [/api/v1/cats/:catId] - 특정 고양이가 패칭되는지? - %s",
       async (id) => {
-        const exCat = await controller.findOne(id);
+        const exCat = await controller.findOne({ id });
         const mockCat = mockCats.find((mockCat) => mockCat.id === id);
 
         expect(exCat.id).toEqual(mockCat.id);
@@ -80,7 +80,7 @@ describe("🚀 [/api/v1/cats] - CatsController", () => {
     // 부분 찾기 실패 ( 404 )
     it("(GET) [/api/v1/cats/:catId] - 찾으려는 고양이가 존재하지 않는지?", async () => {
       try {
-        await controller.findOne(NOT_EXIEST_ID);
+        await controller.findOne({ id: NOT_EXIEST_ID });
         expect("").toThrow();
       } catch (error) {
         expect(error.response.statusCode).toBe(404);
@@ -95,8 +95,11 @@ describe("🚀 [/api/v1/cats] - CatsController", () => {
 
     // 수정
     it(`(PATCH) [/api/v1/cats/:catId] - 고양이가 수정되는지? - ${mockCats[0].id}`, async () => {
-      const updatedCat = await controller.update(mockCat.id, toBeModified);
-      const exCat = await controller.findOne(mockCat.id);
+      const updatedCat = await controller.update(
+        { id: mockCat.id },
+        toBeModified,
+      );
+      const exCat = await controller.findOne({ id: mockCat.id });
 
       expect(exCat.id).toEqual(updatedCat.id);
       expect(exCat.name).toEqual(updatedCat.name);
@@ -106,7 +109,7 @@ describe("🚀 [/api/v1/cats] - CatsController", () => {
     // 수정 실패 ( 404 )
     it("(PATCH) [/api/v1/cats/:catId] - 수정하려는 고양이가 존재하지 않는지?", async () => {
       try {
-        await controller.update(NOT_EXIEST_ID, {});
+        await controller.update({ id: NOT_EXIEST_ID }, {});
         expect("").toThrow();
       } catch (error) {
         expect(error.response.statusCode).toBe(404);
@@ -116,8 +119,8 @@ describe("🚀 [/api/v1/cats] - CatsController", () => {
     // 수정하려는 고양이 이름 중복 ( 409 )
     it("(PATCH) [/api/v1/cats/:catId] - 수정하려는 고양이의 이름이 이미 존재하는지?", async () => {
       try {
-        await controller.findOne(mockCat.id);
-        await controller.update(mockCat.id, toBeModified);
+        await controller.findOne({ id: mockCat.id });
+        await controller.update({ id: mockCat.id }, toBeModified);
 
         expect("").toThrow();
       } catch (error) {
@@ -132,7 +135,7 @@ describe("🚀 [/api/v1/cats] - CatsController", () => {
     it.each(mockCats.map((cat) => [cat.id]))(
       "(DELETE) [/api/v1/cats/:catId] - 고양이 제거 테스트 - %s",
       async (id) => {
-        const deletedCat = await controller.delete(id);
+        const deletedCat = await controller.delete({ id });
 
         expect(id).toEqual(deletedCat.id);
       },
@@ -140,7 +143,7 @@ describe("🚀 [/api/v1/cats] - CatsController", () => {
     // 삭제 실패 ( 404 )
     it("(DELETE) [/api/v1/cats/:catId] - 삭제하려는 고양이가 존재하지 않는지?", async () => {
       try {
-        await controller.delete(NOT_EXIEST_ID);
+        await controller.delete({ id: NOT_EXIEST_ID });
         expect("").toThrow();
       } catch (error) {
         expect(error.response.statusCode).toBe(404);

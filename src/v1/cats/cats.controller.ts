@@ -11,6 +11,7 @@ import {
 
 import { CatsService } from "src/v1/cats/cats.service";
 import { CreateCatDto } from "src/v1/cats/dto/create-cat.dto";
+import { FindByIdDto } from "src/dto/find-by-id.dto";
 import { UpdateCatDto } from "src/v1/cats/dto/update-cat.dto";
 
 @Controller("api/v1/cats")
@@ -29,17 +30,20 @@ export class CatsController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.catsService.findOne(id);
+  findOne(@Param() findByIdDto: FindByIdDto) {
+    return this.catsService.findOne(findByIdDto);
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateCatDto: UpdateCatDto) {
-    return this.catsService.update(id, updateCatDto);
+  update(
+    @Param() findByIdDto: FindByIdDto,
+    @Body() updateCatDto: UpdateCatDto,
+  ) {
+    return this.catsService.update(findByIdDto, updateCatDto);
   }
 
   @Delete(":id")
-  delete(@Param("id") id: string) {
-    return this.catsService.delete(id);
+  delete(@Param() findByIdDto: FindByIdDto) {
+    return this.catsService.delete(findByIdDto);
   }
 }
