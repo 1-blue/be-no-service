@@ -11,6 +11,11 @@ const bootstrap = async () => {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
+        transform: true,
+        transformOptions: {
+          // string 형식으로 들어오는 number | boolean 자동 형변환 실행하는 옵션
+          enableImplicitConversion: true,
+        },
       }),
     );
 

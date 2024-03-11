@@ -21,5 +21,17 @@ declare namespace NodeJS {
     readonly DB_DATABASE: string;
     /** `DB` 명령어 로깅 여부 */
     readonly DB_LOGGING: string;
+
+    /**  현재 사용중인 AWS region */
+    readonly AWS_REGION: string;
+    /**  `IAM`에서 얻은 엑세스 키 */
+    readonly AWS_ACCESS_KEY: string;
+    /**  `IAM`에서 얻은 비밀 엑세스 키 */
+    readonly AWS_ACCESS_SECRET_KEY: string;
+
+    /**  S3 `Bucket` */
+    readonly AWS_S3_BUCKET: string;
+    /**  S3 기본 `URL` */
+    readonly AWS_S3_BASE_URL: string;
   }
 }
