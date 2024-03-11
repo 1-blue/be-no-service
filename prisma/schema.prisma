@@ -62,5 +62,63 @@ model Image {
   status ImageStatus @default(TEMP)
 
   /// [1:N] 연결된 고양이
-  cats Cat[]
+  cats  Cat[]
+  /// [1:N] 연결된 유저
+  users User[]
+}
+
+/// 유저 역할
+enum UserRole {
+  /// 관리자
+  ADMIN
+  /// 일부 권한을 부여받은 유저
+  MANAGER
+  /// 일반 유저
+  USER
+  /// 로그인하지 않고 체험으로 사용하는 유저 ( 1일 )
+  GUEST
+}
+
+/// 유저 로그인 방식
+enum UserProvider {
+  /// 일반 로그인 ( 이메일 + 비밀번호 )
+  LOCAL
+  /// 카카오 로그인
+  KAKAO
+  /// 구글 로그인
+  GOOGLE
+}
+
+/// 유저 모델
+model User {
+  /// 유저 식별자
+  id        String    @id @default(uuid())
+  /// 생성 일자
+  createdAt DateTime  @default(now())
+  /// 수정 일자
+  updatedAt DateTime  @updatedAt
+  /// 삭제 일자
+  deletedAt DateTime?
+
+  /// 유저 이메일
+  email      String
+  /// 유저 비밀번호
+  password   String
+  /// 유저 닉네임
+  nickname   String
+  /// 유저 휴대폰 번호
+  phone      String?
+  /// 유저 보유 금액
+  money      Int
+  /// 유저 역할
+  role       UserRole
+  /// 유저 로그인 방식
+  provider   UserProvider
+  /// 유저 로그인 방식 식별자 ( `OAuth`인 경우 제공받는값 )
+  providerId String?
+
+  /// [1:N] 유저의 이미지
+  image   Image  @relation(fields: [imageId], references: [id])
+  /// [1:N] 이미지 식별자
+  imageId String
 }
