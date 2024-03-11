@@ -7,6 +7,7 @@ import { Prisma } from "@prisma/client";
 
 import { PrismaService } from "src/v0/prisma/prisma.service";
 import { CreateCatDto } from "src/v1/cats/dto/create-cat.dto";
+import { FindByIdDto } from "src/dto/find-by-id.dto";
 import { UpdateCatDto } from "src/v1/cats/dto/update-cat.dto";
 
 @Injectable()
@@ -59,7 +60,7 @@ export class CatsService {
   }
 
   /** 특정 고양이 찾기 */
-  async findOne(id: string) {
+  async findOne({ id }: FindByIdDto) {
     const exCat = await this.prismaService.cat.findUnique({
       where: { id },
       include: this.commonInclude,
@@ -70,8 +71,8 @@ export class CatsService {
   }
 
   /** 특정 고양이 수정 */
-  async update(id: string, { imageId, ...cat }: UpdateCatDto) {
-    await this.findOne(id);
+  async update({ id }: FindByIdDto, { imageId, ...cat }: UpdateCatDto) {
+    await this.findOne({ id });
 
     await this.hasDuplicateName(cat.name);
 
@@ -99,8 +100,8 @@ export class CatsService {
   }
 
   /** 특정 고양이 삭제 */
-  async delete(id: string) {
-    await this.findOne(id);
+  async delete({ id }: FindByIdDto) {
+    await this.findOne({ id });
 
     return await this.prismaService.cat.delete({
       where: { id },
